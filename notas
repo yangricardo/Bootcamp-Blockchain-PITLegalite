@@ -1,0 +1,143 @@
+--------------------------------------------------------------
+Install NPM:
+https://www.npmjs.com/get-npm
+npm -v : ver se instalou corretamente
+brew install node
+--------------------------------------------------------------
+Install HomeBrew:
+https://brew.sh/
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+--------------------------------------------------------------
+Install geth:
+brew tap ethereum/ethereum
+brew install ethereum
+--------------------------------------------------------------
+Install Mist:
+Site: Entra e baixa o .dmg DO MIST, NÃO ETHEREUM WALLET. 
+https://github.com/ethereum/mist/releases
+--------------------------------------------------------------
+Install TestRPC:
+Terminal:
+npm install -g ethereumjs-testrpc
+--------------------------------------------------------------
+Install Truffle:
+npm install -g truffle
+--------------------------------------------------------------
+Install Atom solidity (opicional, pode-se usar qualquer outra ide):
+Terminal
+npm install linter #(if you don't have AtomLinter/Linter installed). 
+npm install linter-solidity
+--------------------------------------------------------------
+https://atom.io/
+https://atom.io/packages/linter
+--------------------------------------------------------------
+comando `geth` baixa/atualiza a rede ethereum
+--------------------------------------------------------------
+abrir o MIST
+MAC: geth --dev --ipcpath ~/Library/Ethereum/geth.ipc console
+
+WINDOWS: geth --dev --ipcpath \\.\pipe\geth.ipc console
+
+LINUX:  geth --dev --ipcpath ~/.ethereum/geth.ipc console
+--------------------------------------------------------------
+geth attach : instancia geth para minerar
+--------------------------------------------------------------
+miner.start() : inicia processo de mineração
+--------------------------------------------------------------
+miner.stop() : encerra processo de mineraçãp
+--------------------------------------------------------------
+endereçao presente na account representa a chave pública
+--------------------------------------------------------------
+para uma transação ser validada, é necessária a presença de um minerador
+endereçoAccount2 = "0x936388c22d5b511631d2c720890de404EdCCCd29"
+--------------------------------------------------------------
+direciona o minerador para uma determinada carteira
+web3.miner.setEtherbase(endereçoAccount2)
+--------------------------------------------------------------
+solidity - linguagem de programação de contratos inteligentes na rede ethereum
+boa documentação
+similar a javascript
+construir um contrato simples para baratear o uso do ether
+quanto mais complexo, mais simples de identificar os bugs
+cada linha de codigo pode ser atacada
+funções publicas e privadas
+cada contrato enviado para rede deve ser pago
+--------------------------------------------------------------
+tipo de variável `Address(ENDEREÇO)`
+designa o endereço de uma carteira ehterenhum
+--------------------------------------------------------------
+address.Balance(): retorna saldo
+address.Transfer(X): transfere o valor x para o endereço
+--------------------------------------------------------------
+let adress = Address(endereçoAccount2)
+andress.Transfer(endereçoAccount1)
+let saldo = anddress.Balance()
+--------------------------------------------------------------
+não é recomendado o uso de float para transacionar dinheiro
+--------------------------------------------------------------
+pragma solidity ^0.4.0
+
+contract SimpleStorage{
+    uint storedData; // variavel de estado - 
+    //uint - unsigned integer
+
+    //Construct - construtor do objeto documento inteligente/ 
+    function SimpleStorage(){
+
+    }
+
+    function bid() playable{
+        //bid - lance
+        //playable - modificador que permite transferir dinheiro
+    }
+
+}
+--------------------------------------------------------------
+contract Purchase {
+    address public seller;
+    //criação de modificador
+    modifier onlySeller(){
+        require(msg.sender == seller);
+        //o codigo  acima do _; executa antes da função que possui o modificador indicado
+        _;
+    }
+
+    function abort() onlySeller{ //modifier usage
+
+    }
+}
+--------------------------------------------------------------
+contract SimpleAuction{
+    event HighestBidIncreased(address bidder, uint amount)
+
+     function bid() playable{
+        //bid - lance
+        //playable - modificador que permite transferir dinheiro
+        HighestBidIncreased(msg.sender, msg.value)
+        //gatilho que avisa sobre o maior lance
+    }
+}
+--------------------------------------------------------------
+contract Ballot{
+    struct Voter{
+        uint weight;
+        bool voted;
+        address delegate;
+        uint vote;
+    }
+}
+--------------------------------------------------------------
+Estimated fee consumption   0.0 ether (102,089 gas)
+Provide maximum fee         0.0 ether (202,089 gas)
+Gas price                   0.0 ether per million gas
+--------------------------------------------------------------
+Estimated fee consumption   0.0 ether (41,586 gas)
+Provide maximum fee         0.0 ether (141,586 gas)
+Gas price                   0.0 ether per million gas
+PARAMETERS SHOW RAW DATA    50 
+Natural Number (256 bits)
+--------------------------------------------------------------
+IDE Online: https://remix.ethereum.org/
+--------------------------------------------------------------
+
+
