@@ -139,5 +139,201 @@ Natural Number (256 bits)
 --------------------------------------------------------------
 IDE Online: https://remix.ethereum.org/
 --------------------------------------------------------------
+pragma solidity ^0.4.15;
 
+contract Voting {
+  mapping(bytes32 => uint8) public votesReceived;
+
+  bytes32[] public candidateList;
+
+  modifier onlyValidCandidate(bytes32 candidate) {
+    require(validCandidate(candidate));
+    _;
+  }
+  function Voting(bytes32[] candidateNames) public {
+    candidateList = candidateNames;
+  }
+
+  function totalVotesFor(bytes32 candidate) onlyValidCandidate(candidate) public returns (uint8){
+
+    return votesReceived[candidate];
+
+  }
+
+  function voteForCandidate(bytes32 candidate) onlyValidCandidate(candidate) public {
+    votesReceived[candidate] += 1;
+  }
+  function validCandidate(bytes32 candidate) public returns (bool) {
+    for(uint i = 0; i < candidateList.length; i++){
+      if(candidate == candidateList[i]){
+        return true;
+      }
+    }
+    return false;
+  }
+}
+--------------------------------------------------------------
+gera um projeto baseado no framework javascript do trufle :
+truffle unbox webpack
+--------------------app/Index.html-------------------------------
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hello World DApp</title>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+</head>
+<body class="container">
+  <h1>A Simple Hello World Voting Application</h1>
+  <div id="address"></div>
+  <div class="table-responsive">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Candidate</th>
+          <th>Votes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Batman</td>
+          <td id="candidate-1"></td>
+        </tr>
+        <tr>
+          <td>DarthVader</td>
+          <td id="candidate-2"></td>
+        </tr>
+        <tr>
+          <td>FelipeArgento</td>
+          <td id="candidate-3"></td>
+        </tr>
+      </tbody>
+    </table>
+    <div id="msg"></div>
+  </div>
+  <input type="text" id="candidate" />
+  <a href="#" onclick="voteForCandidate()" class="btn btn-primary">Vote</a>
+</body>
+< src="https://cdn.rawgit.com/ethereum/web3.js/develop/dist/web3.js"></>
+< src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></>
+< src="app.js"></>
+</html>
+--------------------app/javascripts/App.js---------------------------
+// Import the page's CSS. Webpack will know what to do with it.
+import "../stylesheets/app.css";
+
+// Import libraries we need.
+import { default as Web3} from 'web3';
+import { default as contract } from 'truffle-contract'
+
+/*
+ * When you compile and deploy your Voting contract,
+ * truffle stores the abi and deployed address in a json
+ * file in the build directory. We will use this information
+ * to setup a Voting abstraction. We will use this abstraction
+ * later to create an instance of the Voting contract.
+ * Compare this against the index.js from our previous tutorial to see the difference
+ * https://gist.github.com/maheshmurthy/f6e96d6b3fff4cd4fa7f892de8a1a1b4#file-index-js
+ */
+
+import voting_artifacts from '../../build/contracts/Voting.json'
+
+var Voting = contract(voting_artifacts);
+
+let candidates = {"Batman": "candidate-1", "DarthVader": "candidate-2", "FelipeArgento": "candidate-3"}
+
+window.voteForCandidate = function(candidate) {
+  let candidateName = $("#candidate").val();
+  try {
+    $("#msg").html("Vote has been submitted. The vote count will increment as soon as the vote is recorded on the blockchain. Please wait.")
+    $("#candidate").val("");
+
+    /* Voting.deployed() returns an instance of the contract. Every call
+     * in Truffle returns a promise which is why we have used then()
+     * everywhere we have a transaction call
+     */
+    Voting.deployed().then(function(contractInstance) {
+      contractInstance.voteForCandidate(candidateName, {gas: 140000, from: web3.eth.accounts[0]}).then(function() {
+        let div_id = candidates[candidateName];
+        return contractInstance.totalVotesFor.call(candidateName).then(function(v) {
+          $("#" + div_id).html(v.toString());
+          $("#msg").html("");
+        });
+      });
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+$( document ).ready(function() {
+  if (typeof web3 !== 'undefined') {
+    console.warn("Using web3 detected from external source like Metamask")
+    // Use Mist/MetaMask's provider
+    window.web3 = new Web3(web3.currentProvider);
+  } else {
+    console.warn("No web3 detected. Falling back to http://localhost:8545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to Metamask for development. More info here: http://truffleframework.com/tutorials/truffle-and-metamask");
+    // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+    window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+  }
+
+  Voting.setProvider(web3.currentProvider);
+  let candidateNames = Object.keys(candidates);
+  for (var i = 0; i < candidateNames.length; i++) {
+    let name = candidateNames[i];
+    Voting.deployed().then(function(contractInstance) {
+      contractInstance.totalVotesFor.call(name).then(function(v) {
+        $("#" + candidates[name]).html(v.toString());
+      });
+    })
+  }
+});
+--------------contracts/Migrations/2_deploy_contracts.js-------------
+var Voting = artifacts.require("./Voting.sol");
+module.exports = function(deployer) {
+  deployer.deploy(Voting, ['Batman', 'DarthVader', 'FelipeArgento'], {gas: 6700000});
+};
+--------------------------------------------------------------
+abre um blockchain de teste
+testrpc -a 2 --gasLimit 6721976 --gasprice 1000000000
+
+Last login: Thu Nov 16 16:34:46 on ttys001
+Macs-MacBook-Air-5:~ yang$ testrpc -a 2 --gasLimit 6721976 --gasprice 1000000000
+EthereumJS TestRPC v6.0.1 (ganache-core: 2.0.0)
+
+Available Accounts
+==================
+(0) 0xf976f10408a6bc36be892edfd410ede52b12d4b7
+(1) 0xe281a9afb1d4d37c87e71ff75559bd65dbad2d3e
+
+Private Keys
+==================
+(0) 9f07f2bfc3738aa3dfef384823585d5d80af621d3ba33eec8b03e589c5611f3b
+(1) 104a790e143cd00bb3e0a02c6e705fd50f5e5724a4fe491351791e51fd78d17a
+
+HD Wallet
+==================
+Mnemonic:      guess slab scale illegal omit december still pink toss business unfair mass
+Base HD Path:  m/44'/60'/0'/0/{account_index}
+
+Gas Limit
+==================
+6721976
+
+Listening on localhost:8545
+--------------------------------------------------------------
+truffle migrate
+envia o codigo para a blockchain
+--------------------------------------------------------------
+executa o servidor
+npm run dev
+--------------------------------------------------------------
+truffle unbox 
+gera um ambiente de teste
+--------------------------------------------------------------
+truffle test
+executa os testes unitários
+--------------------------------------------------------------
+Arcade City
+Mycilia
 
